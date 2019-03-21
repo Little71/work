@@ -1,0 +1,8 @@
+import json
+from types import get instance
+class Reference
+def init(self, ref: dict):
+self, schema=ref[' schema']#引用的 schema
+self, field=ref[" field"]#引用的 field
+selfon delete s ref get('on delete,'disable')# cascade, set null, disabl
+self on update ref get (on update,,disable)# cascade, disable

@@ -1,0 +1,28 @@
+elass Reference:
+def nit (sel:, re::dct):
+se1f, schema. ret['schena'1用的sc
+se1f, tield. ret('field"用的ield
+self, on delete- ref get('on delete','disable,
+cascade, set null,digable
+selfon update. ref.get('on update','disable') cascade, disable
+class FieldMetat
+def init (selt, netastrtstr)
+meta- json, loads (metastr)
+if 1sinatance(aeta, atr):
+belt.instance get instance (netal'type'1)
+option. neta['type"I get('eption')
+if option:
+self instance. get instance (metal'type'It'
+I, .option)
+selt instance. get instance (meta[['nane'I)
+self, unique- meta get(unique, Talse)
+self nullable. eta. get('nullable', True)
+self.default. meta. get('default')
+selfmulti. neta. get('aulti, False
+引用是一个0n对
+ref. meta get(
+Terrene
+if ref:
+selfreference Reference(ref)
+else:
+el: reference s None

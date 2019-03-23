@@ -18,14 +18,12 @@
 #
 # client.close()
 
-import ipaddress
-ip = ipaddress.ip_address('127.0.0.1')
+from agent import Agent
 
-import netifaces
-ifaces = netifaces.interfaces() #获取当前主机名
-for iface in ifaces:
-    ips = netifaces.ifaddresses(iface)
-    #获取主机名的地址信息
-    if 2 in ips :
-        for ip in ips[2]:
-            print(ip['addr'])
+if __name__ == '__main__':
+    agent = Agent()
+    try:
+        agent.start()
+    except KeyboardInterrupt as e:
+        agent.shutdown()
+

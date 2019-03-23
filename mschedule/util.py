@@ -13,4 +13,7 @@ def getlogger(mod_name: str, filepath: str):
     return logger
 
 
-logger = getlogger(__name__,"xxx:/xxx.log")
+
+
+if __name__ == '__main__':
+    logger = getlogger(__name__,"xxx:/xxx.log")

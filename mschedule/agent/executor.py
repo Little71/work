@@ -1,5 +1,7 @@
 from subprocess import Popen, PIPE
+from util import getlogger
 
+logger = getlogger(__name__,'x:/xx.log')
 
 class Executor:
     @classmethod
@@ -7,9 +9,5 @@ class Executor:
         proc = Popen(script, shell=True, stdout=PIPE)
         code = proc.wait(timeout)
         txt = proc.stdout.read()
+        logger.info(f'{code} {txt}')
         return code, txt
-
-
-if __name__ == '__main__':
-    e = Executor('echo "htllo"')
-    print(e.run())

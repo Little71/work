@@ -28,4 +28,7 @@ class ConnectionManager:
     def get_task(self,agent_id):
         return self.store.get_task(agent_id)
 
+    def get_agents(self):
+        return self.store.get_agents()
+
 

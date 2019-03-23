@@ -54,7 +54,7 @@ class Message:
         }
 
     def result(self,task_id,code,ouput):
-        """心跳信息"""
+        """响应信息"""
         return {
             "type": "result",
             "payload": {

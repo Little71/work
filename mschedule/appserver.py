@@ -1,12 +1,13 @@
-import zerorpc
+from master import Master
 
-MASTER_URL = "tcp://0.0.0.0:9000"
-class Master:
-    def sendmsg(self,msg):
-        return f'ack.hello{msg}'
 
-server =zerorpc.Server(Master())
-server.bind(MASTER_URL)
-server.run()
+if __name__ == '__main__':
+    master = Master()
+    try:
+        master.start()
+    except KeyboardInterrupt:
+        master.shutdown()
 
-print('~~~~~~~~~~')
+
+
+

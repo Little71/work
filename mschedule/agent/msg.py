@@ -13,7 +13,7 @@ class Message:
                 self.id = f.readline().strip()
         else:
             self.id = uuid.uuid4().hex
-            with open(myidpath,'w') as f:
+            with open(myidpath, 'w') as f:
                 f.write(self.id)
 
     def reg(self):
@@ -50,5 +50,17 @@ class Message:
                 "id": self.id,  # 唯一的id
                 "hostname": socket.gethostname(),  # 获取主机名
                 "ip": self._get_addresses()
+            }
+        }
+
+    def result(self,task_id,code,ouput):
+        """心跳信息"""
+        return {
+            "type": "result",
+            "payload": {
+                "id": task_id,
+                "agent_id": self.id,
+                "code": code,
+                "putput": ouput
             }
         }

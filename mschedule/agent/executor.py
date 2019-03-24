@@ -1,7 +1,9 @@
 from subprocess import Popen, PIPE
+
+from agent.config import PATH_LOG
 from util import getlogger
 
-logger = getlogger(__name__,'x:/xx.log')
+logger = getlogger(__name__,PATH_LOG)
 
 class Executor:
     @classmethod

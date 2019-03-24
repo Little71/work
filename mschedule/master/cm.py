@@ -1,7 +1,8 @@
+from agent.config import PATH_LOG
 from master.storage import Storage
 from util import getlogger
 
-logger = getlogger(__name__,'x:/xxx')
+logger = getlogger(__name__,PATH_LOG)
 
 class ConnectionManager:
     def __init__(self):

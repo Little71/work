@@ -4,18 +4,18 @@ import zerorpc
 
 from agent.executor import Executor
 from agent.msg import Message
-from .config import CONNECTION_URL, TIMEOUT
+from agent.config import CONNECTION_URL, TIMEOUT, PATH_LOG, UUIDPATH
 from util import getlogger
 from .state import *
 
-logger = getlogger(__name__, 'x:/xxx')
+logger = getlogger(__name__, PATH_LOG)
 
 
 class ConnectionManager:
     def __init__(self):
         self.client = zerorpc.Client()
         self.event = threading.Event()
-        self.message = Message('x:/xxx')
+        self.message = Message(UUIDPATH)
         self.state = WAITING  # 任务状态
         self.exec = Executor()
 

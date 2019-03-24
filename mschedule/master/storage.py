@@ -12,9 +12,7 @@ class Storage:
 
     def reg_hb(self, **payload):
         id = payload['id']
-        agent = self.agents.get(id)
-        if not agent:
-            agent = {}
+        agent = self.agents.get(id,{})
         agent['timestamp'] = datetime.datetime.now().timestamp()
         agent['busy'] = False  # anget忙不忙，即有没有任务
         agent['info'] = payload

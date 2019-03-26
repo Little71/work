@@ -20,6 +20,8 @@ class Graph(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(48), nullable=False, unique=True)
     desc = Column(String(500), nullable=False)
+    checked = Column(Integer, nullable=False, default=0)
+    sealed = Column(Integer, nullable=False, default=0)
 
     # 经常从图查看所有顶点、边的信息
     vertexs = relationship('Vertex')
@@ -31,7 +33,7 @@ class Vertex(Base):
     __tablename__ = 'vertex'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(48),nullable=True)
+    name = Column(String(48), nullable=True)
     input = Column(Text, nullable=False)  # 输入参数
     script = Column(Text, nullable=False)
     g_id = Column(Integer, ForeignKey('graph.id'), nullable=False)

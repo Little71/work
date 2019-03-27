@@ -79,8 +79,8 @@ class Track(Base):
     p_id = Column(Integer, ForeignKey('pipeline.id'), nullable=False)
     v_id = Column(Integer, ForeignKey('vertex.id'), nullable=False)
     state = Column(Integer, nullable=False, default=STATE_WAITING)
-    input = Column(Text, nullable=False)
-    output = Column(Text, nullable=False)
+    input = Column(Text)
+    output = Column(Text)
 
     vertex = relationship('Vertex')
     pipeline = relationship('Pipeline')

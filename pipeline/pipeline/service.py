@@ -1,4 +1,6 @@
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from json import JSONDecodeError
 
 from pipeline.models import Graph, db, Vertex, Edge, Pipeline, Track
 from functools import wraps
@@ -37,7 +39,11 @@ def add_vertex(graph: Graph, name: str, input=None, script=None):
     v.g_id = graph.id
     v.name = name
     v.input = input
-    v.script = script
+    try:
+        json.loads(script)
+        v.script = script
+    except JSONDecodeError:
+        v.script = {'script': f'{script}'}
     db.session.add(v)
     return v
 
@@ -193,6 +199,7 @@ def check_graph(graph: Graph) -> bool:
 
 
 # 开启一个流程，用户指定一个起点（入度为0）
+@transactional
 def start(graph: Graph, vertex: Vertex, params=None):
     # 判断流程是否存在，且checked为1即校验通过
     g = db.session.query(Graph).filter(Graph.id == graph.id).filter(Graph.checked == 1).first()
@@ -256,7 +263,6 @@ def execute(script, timeout=None):
 
 # 流转
 # 线程中执行
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 MAX_POOL_SIZE = 5
 executor = ThreadPoolExecutor(max_workers=MAX_POOL_SIZE)
@@ -269,27 +275,48 @@ def iter_pipelines():
     # for pipeline in pipelines:
     #     yield pipeline
 
+@transactional
+def find_next_id(p:Pipeline,query):
+    edge = query.first()
+    if edge:
+        p.current = edge.head
+        p.state = STATE_WAITING
+        db.session.add(p)
+
+        t = Track()
+        t.p_id = p.id
+        t.v_id = edge.head
+        t.state = STATE_WAITING
+        db.session.add(t)
+        return edge.head
+    else:
+        p.state = STATE_FINISH
+        db.session.add(p)
 
 # 流转
 # 注意目前一次只处理一段pipeline表中状态为wating的，异步的
+@transactional
 def shift():
     futures = {}
-    for pipeline in iter_pipelines():
-        s = json.loads(pipeline.vertex.script)
-        script = s['script']
-        f = executor.submit(execute, script)
-        futures[f] = pipeline, s
-        for future in as_completed(futures):
+    with executor:
+        for pipeline in iter_pipelines():
+            s = json.loads(pipeline.vertex.script)
+            script = s['script']
+            f = executor.submit(execute, script)
+            futures[f] = pipeline, s
+
+        for f in as_completed(futures):
             p, s = futures[f]
             try:
-                code, txt = future.result()
+                code, txt = f.result()
                 if code == 0:
                     # 脚本正常 track记录 output  找不到抛异常
                     t = db.session.query(Track).filter((Track.p_id == p.id) & (Track.v_id == p.current)).one()
                     t.state = STATE_SUCCEED
                     t.output = txt
                     db.session.add(t)
-                    # 如果当前节点是重点，就不用到下一个节点，修改pipeline、track状态为finish就行了，判断当前顶点的出度是否为0
+                    # 如果当前节点是重点，就不用到下一个节点，
+                    # 修改pipeline、track状态为finish就行了，判断当前顶点的出度是否为0
 
                     # 寻找下一个执行节点vertex，找到就修改
                     # 如果是自动，就要在script中增加些参数，直接将current更新为下一个节点，状态为waiting
@@ -297,13 +324,12 @@ def shift():
                         n = s['next']
                         # 验证是否是下一个节点，成功返回下一个顶点id
                         if type(n) == int:
-                            pass
+                            query = db.session.query(Edge).filter((Edge.tail == p.current) & (Edge.head == n))
                         else:
-                            pass
-                        # 验证通过
-                        p.current = next_id
-                        p.state = STATE_WAITING
-                        db.session.add(p)
+                            vertex = db.session.query(Vertex).filter((Vertex.name == n) & (Vertex.g_id == p.g_id)).first()
+                            query = db.session.query(Edge).filter((Edge.tail == p.current) & (Edge.head == vertex.id))
+                        next_id = find_next_id(p, query)
+                        return next_id
                     else:
                         # TODO 如果是手动，就把pipeline中的current状态置为state_succeed,以后还得提供便利状态为state_scuueed的顶点
                         p.state = STATE_SUCCEED

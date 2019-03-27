@@ -55,7 +55,7 @@ def list_schema(page: list, size: int, deleted: bool = False):
     query = session.query(Schema)
     if not deleted:
         query = query.filter(Schema.delete == False)
-    return paginate(page, size, query)
+    return list(paginate(page, size, query))
 
 
 def paginate(page, size, query):
@@ -64,7 +64,11 @@ def paginate(page, size, query):
         size = size if 0 < size < 100 else 20
         count = query.count()
         pages = math.ceil(count / size)
-        result = query.limit(size).offset(size * (page - 1)).all()
-        return result, (page, size, count, pages)
+        while True:
+            result = query.limit(size).offset(size * (page - 1))
+            if not result:
+                return None
+            yield from result, (page, size, count, pages)
+            page +=1
     except Exception as e:
         logger.error(f'Error:{e}.')

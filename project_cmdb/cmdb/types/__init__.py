@@ -7,7 +7,6 @@ instance_cache = {}
 
 
 def get_class(type: str):
-    type = type.strip()
     cls = clsaaes_cache.get(type)
     if cls:
         return cls
@@ -28,9 +27,12 @@ def get_class(type: str):
 
 #"cmdb.types.Int"  "Int" 两种名称
 def get_instance(type: str, **option):
-
-
-    option_key = ",".join("{}={}".format(k, v) for k, v in sorted(option.items()))
+    '''
+    :param type: 参数类型
+    :param option: 参数规则
+    :return:
+    '''
+    option_key = ",".join(f"{k}={v}"for k, v in sorted(option.items()))
     key = f"{type}:{option_key}"
     # 如验证规则option改变，所以不同的规则，实例行为不同，所以要把规则加进去
     '''
@@ -38,13 +40,13 @@ def get_instance(type: str, **option):
     要清理调整，是因为有很多内存碎片都是不想要的，拿走就变成了内存空洞，这就要处理规整了
     规整之后，就会有连续的大内存了，不然这些连续的内存都是千疮百孔
     '''
-    obj = instance_cache.get(key)
-    if obj:
-        return obj
+    instance = instance_cache.get(key)
+    if instance:
+        return instance
 
-    obj = get_class(type)(**option)
-    instance_cache[key] = obj
-    return obj
+    instance = get_class(type)(**option)
+    instance_cache[key] = instance
+    return instance
 
 '''
 因为在导入模块的函数的时候，模块已经加载了，所以可以直接通过globals()获取当前模块的名词空间的属性字典
@@ -107,3 +109,6 @@ class IP(BaseType):
 
 #加载类到字典
 inject()
+
+print(clsaaes_cache )
+print(instance_cache)

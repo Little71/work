@@ -67,7 +67,7 @@ def add_field(schema_name, name, meta):
         return _add_field(field)
 
     # 到这里已有一个隐含条件即不可为空
-    if meta_data.unique:  # 必须唯一
+    if meta_data.unique:  # 如必须唯一
         # 当前条件对一个正在使用的逻辑表加字段不可为空又要唯一，做不到
         raise TypeError("This field is not required an unique")
 
@@ -80,7 +80,7 @@ def add_field(schema_name, name, meta):
         for entity in iter_entities(schema.id):
             value = Value()
             value.entity_id = entity.id
-            value.field = field
+            value.field = field #这时候还没生成field.id，只能通过sqlalchemy的外键约束去填充
             value.value = meta_data.default
             session.add(value)
         return _add_field(field)
@@ -90,7 +90,7 @@ def iter_entities(schema_id, patch=100):
     page = 1
     while True:
         query = session.query(Entity).filter((Entity.schema_id == schema_id) & (Entity.delete == False))
-        reuslt = query.limit(patch).offset(patch * (page - 1)).all()
+        reuslt = query.limit(patch).offset(patch * (page - 1))
         if not reuslt:
             return None
         yield from reuslt

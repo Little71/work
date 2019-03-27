@@ -65,6 +65,7 @@ class Field(Base):
     meta = Column(Text, nullable=False)
     ref_id = Column(Integer, ForeignKey('field.id'), nullable=False)
     delete = Column(Boolean, nullable=False, default=False)
+    reference = Column(String(48))
 
     schema = relationship('Schema')
     field = relationship('Field', uselist=False)  # 1对1，被应用的id
@@ -92,7 +93,7 @@ class Value(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     value = Column(Text, nullable=False)
     field_id = Column(Integer, ForeignKey('field.id'), nullable=False)
-    entity_id = Column(BigInteger, ForeignKey('schema.id'), nullable=False)
+    entity_id = Column(BigInteger, ForeignKey('entity.id'), nullable=False)
     delete = Column(Boolean, nullable=False, default=False)
 
     entity = relationship('Entity')

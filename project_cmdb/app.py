@@ -1,4 +1,6 @@
 import json
+from pprint import pprint
+
 from cmdb.types import get_instance
 
 jsonstr = """
@@ -7,18 +9,18 @@ jsonstr = """
         "name":"cmdb.types.IP",
         "option":{
             "perfix":"192.168"
-        },
-    }   
+            }
+    },
     "value":"192.168.0.1,192.168.0.2",
     "nullable":true,
     "unique":false,
     "default":"",
-    "multi":true
+    "multi":true,
     "reference":{
         "schema":"ippool",
         "field":"ip",
-        "on_delete":cascade|set_null|disbale,
-        "on_update":cascade|disbale,
+        "on_delete":"cascade|set_null|disbale",
+        "on_update":"cascade|disbale"
     }
 }
 """
@@ -29,7 +31,15 @@ jsonstr1 = """
     "unique":true
 }
 """
-obj = json.loads(jsonstr)
-a = get_instance(obj['type'],**obj.get('option',{})).stringify(obj['value'])
-print(a)
 
+# obj = json.loads(jsonstr)
+# a = get_instance(obj['type'],**obj.get('option',{}))
+#
+# a = a.stringify(obj['value'])
+#
+# print(a)
+
+
+def a():
+    return None is not None
+print(a())

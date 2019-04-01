@@ -41,7 +41,7 @@ from assets.models import Asset
 
 try:
     import termios
-    import tty
+    import tty #开启虚拟机，截取到用户登录
 except ImportError:
     print('\033[1;31m仅支持类Unix系统 Only unix like supported.\033[0m')
     time.sleep(3)
@@ -89,17 +89,18 @@ class TTY:
         paramiko的channel其实是与后面ssh server建立了一个tcp长连接,输入都会发送到后面的主机上
         :return: None
         """
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh = paramiko.SSHClient() #ssh协议模块
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #ssh连接是否信任密钥
         try:
+            #建立ssh连接,传输过程通过ssh加密过的密文，就是一个socket 连接
             ssh.connect(self.host,
                         port=self.port,
                         username=self.username,
                         password=self.password)
         except (paramiko.ssh_exception.AuthenticationException, paramiko.ssh_exception.SSHException):
             color_print('连接服务器失败', exit=True)
-        self.ssh = ssh
-        self.chan = ssh.invoke_shell(term='xterm')
+        self.ssh = ssh #用实例属性保存ssh连接，不然会被gc回收，就会断开
+        self.chan = ssh.invoke_shell(term='xterm') #一个管道，即连接复用，在一个连接上启用多个通道
 
     def __get_log_f(self):
         now = datetime.datetime.now()
@@ -121,29 +122,37 @@ class TTY:
             # 设置tty为raw模式, 不再使用已经设置好的tty, tty需要由我们来重新控制
             tty.setraw(sys.stdin.fileno())
             tty.setcbreak(sys.stdin.fileno())
-            self.chan.settimeout(0.0)
+            self.chan.settimeout(0.0) #管道超时时间，为0就是不断开
 
             while True:
                 try:
+					# select分发机制，如有数据过来，就处理，不然就阻塞
+					# sys.stdin会收到命令行输出入的数据
+					# self.chan管道，服务器返回就有数据
+					# 这就监听了两个socket
                     r, w, e = select.select([self.chan, sys.stdin], [], [])
                 except:
                     pass
 
                 if self.chan in r:
                     try:
+						# 读取数据	 
                         recv_data = self.chan.recv(1024).decode('utf8')
                         if len(recv_data) == 0:
                             break
+						# 标准输出
                         sys.stdout.write(recv_data)
-                        sys.stdout.flush()
+                        sys.stdout.flush() #刷新下
                         # 记录输入输出到日志
                         log_f.write(recv_data)
                     except socket.timeout:
                         print('Timeout')
-                if sys.stdin in r:
+                if sys.stdin in r:#表示用户有输入
+					#读取命令行内容
                     x = os.read(sys.stdin.fileno(), 1024)
                     if len(x) == 0:
                         break
+					# 发给服务器
                     self.chan.send(x)
 
         finally:
@@ -151,7 +160,7 @@ class TTY:
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_tty)
             log_f.close()
 
-
+#显示交互界面
 class TTYNav:
     def __init__(self, username=username_login):
         self.username = username
@@ -172,6 +181,7 @@ class TTYNav:
         """
 
         if self.user:
+			# 类似字符格式化
             print(textwrap.dedent(nav_string))
         else:
             color_print('没有该用户，默默的退出', exit=True)

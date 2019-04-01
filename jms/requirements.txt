@@ -1,0 +1,6 @@
+Django==1.11
+idna==2.1
+paramiko==2.0.0
+pyasn1==0.1.9
+pycparser==2.14
+six==1.10.0

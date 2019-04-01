@@ -48,4 +48,3 @@ class PermDeleteView(SingleObjectMixin, View):
         perm.delete()
         return HttpResponse("删除成功")
 
-
